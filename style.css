@@ -157,3 +157,18 @@ a.item:hover img.thumb { transform: translateY(-3px); }
 
 /* blood that drips from the neuron collects at the bottom of the window (drawn by neuron.js) */
 .blood-pool { position: fixed; inset: 0; width: 100%; height: 100%; z-index: 60; pointer-events: none; }
+
+/* pretend mouse pointer that clicks the neuron once when the page opens (neuron.js) */
+.fake-cursor {
+  position: absolute; left: 0; top: 0; z-index: 70; pointer-events: none; opacity: 0;
+  transition: transform 1.1s cubic-bezier(.45, .05, .25, 1), opacity .4s;
+}
+.fake-cursor.on { opacity: 1; }
+.fake-cursor svg { display: block; filter: drop-shadow(0 1px 2px rgba(0,0,0,.6)); transition: transform .12s; transform-origin: 2px 2px; }
+.fake-cursor.press svg { transform: scale(.82); }
+.fake-cursor-ring {
+  position: absolute; left: 2px; top: 2px; width: 28px; height: 28px; margin: -14px 0 0 -14px;
+  border: 2px solid #ece6da; border-radius: 50%; opacity: 0; transform: scale(.3);
+}
+.fake-cursor.clicked .fake-cursor-ring { animation: fake-click .5s ease-out forwards; }
+@keyframes fake-click { from { opacity: .9; transform: scale(.3); } to { opacity: 0; transform: scale(1.6); } }

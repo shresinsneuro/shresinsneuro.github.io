@@ -625,7 +625,43 @@
     // click to fire; with the pool, only clicked spikes drop blood
     c.addEventListener("click", function () { self.fire(performance.now(), true); });
     if ("IntersectionObserver" in window) new IntersectionObserver(function (e) { self.visible = e[0].isIntersecting; }).observe(c);
+    if (this.pool) this.demoWhenSeen();
   }
+
+  /* A pretend mouse pointer glides in and clicks the cell body once, the first time the neuron is
+     well in view, to show visitors that it can be clicked. */
+  Neuron.prototype.demoWhenSeen = function () {
+    var self = this, done = false;
+    function go() { if (done) return; done = true; setTimeout(function () { self.demo(); }, 700); }
+    if (!("IntersectionObserver" in window)) return go();
+    var io = new IntersectionObserver(function (e) {
+      if (e[0].intersectionRatio >= 0.5) { io.disconnect(); go(); }
+    }, { threshold: [0, 0.5, 1] });
+    io.observe(this.c);
+  };
+  Neuron.prototype.demo = function () {
+    var self = this;
+    this.resize();
+    if (this.reduce || !this.cw) { this.fire(performance.now(), true); return; }
+    var r = this.c.getBoundingClientRect(), so = G.soma;
+    // cell body in page pixels (the drawing is upright when the canvas is taller than wide)
+    var tx = r.left + window.scrollX + (this.vert ? so.y : so.x) * this.S;
+    var ty = r.top + window.scrollY + (this.vert ? W - so.x : so.y) * this.S;
+    var cur = document.createElement("div");
+    cur.className = "fake-cursor"; cur.setAttribute("aria-hidden", "true");
+    cur.innerHTML = '<svg width="22" height="30" viewBox="0 0 22 30"><path d="M2 2 L2 24 L8 18.5 L12 27.5 L15.5 26 L11.6 17.2 L19.5 17.2 Z" ' +
+      'fill="#fff" stroke="#000" stroke-width="1.6" stroke-linejoin="round"/></svg><span class="fake-cursor-ring"></span>';
+    document.body.appendChild(cur);
+    var sx = tx - Math.min(220, r.left + 60), sy = ty + 150;
+    cur.style.transform = "translate(" + sx + "px," + sy + "px)";
+    cur.getBoundingClientRect(); // start the glide from here
+    cur.classList.add("on");
+    cur.style.transform = "translate(" + tx + "px," + ty + "px)";
+    setTimeout(function () { cur.classList.add("press", "clicked"); }, 1250);
+    setTimeout(function () { cur.classList.remove("press"); self.fire(performance.now(), true); }, 1400);
+    setTimeout(function () { cur.classList.remove("on"); }, 2300);
+    setTimeout(function () { cur.remove(); }, 2900);
+  };
   Neuron.prototype.fire = function (now, clicked) {
     var last = this.spikes[this.spikes.length - 1];
     if (last && now - last.t0 < 500) { // refractory period: a click just after a spike gives that spike the blood
@@ -687,7 +723,8 @@
     if (!this.visible) return;
     this.resize();
     if (!this.cw) return;
-    if (!this.reduce && now >= this.next) { this.fire(now, false); this.next = now + 2600 + Math.random() * 1400; }
+    // the page version (data-pool) fires only when clicked; the others also fire on their own
+    if (!this.pool && !this.reduce && now >= this.next) { this.fire(now, false); this.next = now + 2600 + Math.random() * 1400; }
     for (i = this.spikes.length - 1; i >= 0; i--) {
       var sp = this.spikes[i];
       if (!sp.released && now - sp.t0 >= T_BOUTON) { sp.released = true; this.release(now, sp); }
