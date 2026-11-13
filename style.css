@@ -39,6 +39,15 @@ main li::before { content: "•"; position: absolute; left: 0; color: var(--gold
 .u:hover { color: var(--gold); border-color: var(--gold); }
 .quiet { color: var(--muted); }
 
+/* ---------- photo row on About ---------- */
+.photos { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; margin: 6px 0 26px; }
+.photos a { display: block; overflow: hidden; border-radius: 2px; background: #1a1a1a; }
+.photos img {
+  display: block; width: 100%; aspect-ratio: 3 / 4; object-fit: cover;
+  filter: grayscale(.35) brightness(.9); transition: filter .3s, transform .4s;
+}
+.photos a:hover img { filter: none; transform: scale(1.03); }
+
 /* ---------- lists (work, books, films, blog) ---------- */
 .list { display: flex; flex-direction: column; gap: 30px; }
 .item { display: grid; grid-template-columns: 70px 1fr; gap: 20px; align-items: start; }
@@ -69,5 +78,6 @@ a.item:hover b { color: var(--gold); }
   .side { position: static; }
   .side nav { display: flex; flex-wrap: wrap; gap: 4px 18px; }
   .side a { padding: 2px 0; }
+  .photos { grid-template-columns: repeat(2, 1fr); }
   .side a.on::before { left: 0; right: 0; top: auto; bottom: -2px; width: auto; height: 1px; }
 }
