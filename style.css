@@ -72,7 +72,16 @@ a.item:hover img.thumb { transform: translateY(-3px); }
 .film .back { display: inline-block; font-size: 13px; color: var(--muted); margin-bottom: 28px; }
 .film .back:hover { color: var(--gold); }
 .film-top { display: grid; grid-template-columns: 150px 1fr; gap: 24px; align-items: end; margin-bottom: 28px; }
-.film-top img { width: 100%; aspect-ratio: 2 / 3; object-fit: cover; border-radius: 2px; }
+.film-top .big { width: 100%; aspect-ratio: 2 / 3; object-fit: cover; border-radius: 2px; }
+.film-top .big.card-poster { font-size: 15px; padding: 14px; }
+.rank-big { color: var(--gold); font-size: 12px; margin-bottom: 6px !important; }
+
+/* ranked film list */
+.intro { margin-bottom: -8px; font-size: 13px; }
+.item.ranked { grid-template-columns: 28px 70px 1fr; gap: 16px; align-items: center; }
+.rank { font-style: normal; font-size: 12px; color: var(--gold); font-variant-numeric: tabular-nums; }
+.card-poster { display: flex; align-items: flex-end; color: #f1ece2; font-weight: 600; border: 1px solid var(--line); background: var(--c); }
+.item .thumb { align-self: start; }
 .film-top p { margin-bottom: 4px; font-size: 13px; }
 .film h1 { font-size: 22px; font-weight: 600; line-height: 1.2; margin-bottom: 8px; }
 .film h2 { font-size: 13px; font-weight: 500; color: var(--gold); margin: 32px 0 8px; }
