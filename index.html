@@ -32,24 +32,54 @@
       <a href="images/nasdaq.jpg"><img src="images/nasdaq.jpg" alt="Nasdaq billboard in Times Square congratulating the 2025 Michigan State Entrepreneurship &amp; Innovation students" style="object-position:57% 45%"></a>
     </div>
 
-    <p>“The very same mush of cells in my brain writing these words is the reason for the unending pangs of lunacy that I perform.”</p>
+    <p>I have a background in neuroscience, finance and innovation.</p>
 
-    <p>I study neuroscience and engineering at Brown, and I want to build <a class="u" href="work.html">brain–computer interfaces</a> that give people back what they've lost.</p>
+    <p>Currently at Brown, I aim to bring to the world engineering and biotech solutions that free sapiens from the ailments of the mind.</p>
 
-    <p>I'm drawn to the place where biology meets machines, and to the questions that come with it: what a thought is, and who should be allowed to read one.</p>
+    <p>“The very same mush of cells in my brain writing these words is the reason for the unending dysphoria that I live with.”</p>
 
     <p>Some things I'm working on:</p>
     <ul>
-      <li>Decoding attention from <a class="u" href="work.html">EEG signals</a>.</li>
-      <li>Research on reading movement intent from the motor cortex.</li>
-      <li>An essay on <a class="u" href="blog.html">neural privacy</a>.</li>
+      <li>Obsessive-compulsive disorder (OCD)</li>
+      <li>Vitreous eye floaters advocacy</li>
+      <li>Smart wearables</li>
+      <li>Mapping the biotechnology landscape in the US</li>
+      <li>Neurosecurity in the near future</li>
+      <li>Intellectual property in biotech</li>
     </ul>
 
-    <p>Outside the lab I read <a class="u" href="books.html">books</a> about the mind and watch <a class="u" href="films.html">films</a> about it too.</p>
+    <p>More about my life experiences, philosophy and opinions in the <a class="u" href="blog.html">blog</a>.</p>
 
-    <!-- EDIT: put your real LinkedIn link and CV -->
-    <p class="quiet">Find me on <a class="u" href="https://github.com/shresinsneuro">GitHub</a> and <a class="u" href="https://www.linkedin.com/">LinkedIn</a>.</p>
+    <p class="quiet">Find me on <a class="u" href="https://www.linkedin.com/in/shreshta-sinha-797363186" target="_blank" rel="noopener">LinkedIn</a>, <a class="u" href="https://github.com/shresinsneuro" target="_blank" rel="noopener">GitHub</a> and <a class="u" href="https://x.com/Shresinshybrid" target="_blank" rel="noopener">X</a>.</p>
   </main>
 </div>
+
+<!-- Photo viewer: opens a clicked photo full screen with a close button -->
+<div class="viewer" id="viewer" hidden>
+  <button class="viewer-close" type="button" aria-label="Close photo">&times;</button>
+  <img alt="">
+</div>
+<script>
+  (function () {
+    var viewer = document.getElementById("viewer");
+    var big = viewer.querySelector("img");
+    var closeBtn = viewer.querySelector(".viewer-close");
+    function open(src, alt) {
+      big.src = src; big.alt = alt || "";
+      viewer.hidden = false; document.body.style.overflow = "hidden"; closeBtn.focus();
+    }
+    function close() { viewer.hidden = true; big.src = ""; document.body.style.overflow = ""; }
+    document.querySelectorAll(".photos a").forEach(function (a) {
+      a.addEventListener("click", function (e) {
+        e.preventDefault();
+        var img = a.querySelector("img");
+        open(a.getAttribute("href"), img && img.alt);
+      });
+    });
+    closeBtn.addEventListener("click", close);
+    viewer.addEventListener("click", function (e) { if (e.target === viewer) close(); });
+    document.addEventListener("keydown", function (e) { if (e.key === "Escape" && !viewer.hidden) close(); });
+  })();
+</script>
 </body>
 </html>

@@ -48,6 +48,20 @@ main li::before { content: "•"; position: absolute; left: 0; color: var(--gold
 }
 .photos a:hover img { filter: none; transform: scale(1.03); }
 
+/* ---------- full-screen photo viewer ---------- */
+.viewer {
+  position: fixed; inset: 0; z-index: 100; display: flex; align-items: center; justify-content: center;
+  background: rgba(0, 0, 0, .92); padding: 56px 16px 24px;
+}
+.viewer[hidden] { display: none; }
+.viewer img { max-width: 100%; max-height: 100%; object-fit: contain; border-radius: 2px; }
+.viewer-close {
+  position: absolute; top: 12px; right: 16px; width: 44px; height: 44px;
+  background: none; border: 0; color: #fff; font-size: 40px; line-height: 1; cursor: pointer;
+  opacity: .85; transition: opacity .2s, transform .2s;
+}
+.viewer-close:hover, .viewer-close:focus-visible { opacity: 1; transform: scale(1.1); outline: none; }
+
 /* ---------- lists (work, books, films, blog) ---------- */
 .list { display: flex; flex-direction: column; gap: 30px; }
 .item { display: grid; grid-template-columns: 70px 1fr; gap: 20px; align-items: start; }
