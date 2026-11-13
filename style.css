@@ -142,11 +142,12 @@ a.item:hover img.thumb { transform: translateY(-3px); }
 .neuron { display: block; width: 100%; height: auto; aspect-ratio: 1000 / 420; margin-top: 36px; cursor: pointer; }
 /* phones and tablets: upright (neuron.js turns it when it is taller than wide), centred below the text */
 .neuron[data-pool] { width: auto; height: min(70vh, 620px); aspect-ratio: 420 / 1000; margin: 40px auto 0; }
-/* wide screens: upright beside the text, near the top of the page; it scrolls with the page */
+/* wide screens: upright beside the text, its top level with the bottom of the photo row; it scrolls with the page */
 @media (min-width: 1120px) {
   .neuron, .neuron[data-pool] {
     /* 836px = left padding + menu + gap + text column (48 + 140 + 48 + 560) + a 40px gap */
-    position: absolute; left: 836px; top: 90px;
+    /* 312px = where the photos end: page padding 90 + first line and gaps 43 + photo height 179 */
+    position: absolute; left: 836px; top: 312px;
     width: auto; height: min(60vh, 574px); aspect-ratio: 420 / 1000; margin: 0;
   }
 }
