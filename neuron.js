@@ -220,10 +220,15 @@
   function eachSheath(ctx, fn) {
     G.sheaths.forEach(function (sh) { ctx.save(); ctx.translate(sh.x, sh.y); ctx.rotate(sh.a); fn(sh); ctx.restore(); });
   }
+  // draws the 1000 x 420 scene at scale k; when the canvas is taller than wide it is turned
+  // a quarter turn so the cell body sits at the top and the terminals at the bottom
+  function place(ctx, n, k) {
+    if (n.vert) ctx.setTransform(0, -k, k, 0, 0, W * k); else ctx.setTransform(k, 0, 0, k, 0, 0);
+  }
   function begin(n) {
     var ctx = n.ctx;
     ctx.setTransform(1, 0, 0, 1, 0, 0); ctx.clearRect(0, 0, n.c.width, n.c.height);
-    ctx.setTransform(n.S * n.dpr, 0, 0, n.S * n.dpr, 0, 0);
+    place(ctx, n, n.S * n.dpr);
     ctx.lineCap = ctx.lineJoin = "round";
     return ctx;
   }
@@ -331,9 +336,9 @@
     ctx.putImageData(img, 0, 0);
   }
   function drawPixel(n, now) {
-    var L = n.lctx, lw = n.low.width, lh = n.low.height, k = lw / W, so = G.soma, nu = G.nucleus;
+    var L = n.lctx, lw = n.low.width, lh = n.low.height, k = lw / (n.vert ? H : W), so = G.soma, nu = G.nucleus;
     var C = { d: "#3a3733", b: "#6e6a62", l: "#a39d92", t: "#e9e4da", g: "#c9a24a", h: "#fff1c4" };
-    L.setTransform(1, 0, 0, 1, 0, 0); L.clearRect(0, 0, lw, lh); L.setTransform(k, 0, 0, k, 0, 0);
+    L.setTransform(1, 0, 0, 1, 0, 0); L.clearRect(0, 0, lw, lh); place(L, n, k);
     L.lineCap = L.lineJoin = "round";
 
     L.strokeStyle = C.b; L.fillStyle = C.b;
@@ -591,11 +596,16 @@
     }
   };
   Neuron.prototype.resize = function () {
-    var cw = this.c.clientWidth, dpr = window.devicePixelRatio || 1;
-    if (cw === this.cw && dpr === this.dpr) return;
-    this.cw = cw; this.dpr = dpr; this.S = cw / W;
-    this.c.width = Math.round(cw * dpr); this.c.height = Math.round(cw * H / W * dpr);
-    if (this.low) { this.P = Math.max(2, Math.round(cw / 190)); this.low.width = Math.ceil(cw / this.P); this.low.height = Math.ceil(this.low.width * H / W); }
+    var cw = this.c.clientWidth, ch = this.c.clientHeight, dpr = window.devicePixelRatio || 1;
+    if (cw === this.cw && ch === this.ch && dpr === this.dpr) return;
+    this.cw = cw; this.ch = ch; this.dpr = dpr; this.vert = ch > cw;
+    var long = this.vert ? ch : cw;
+    this.S = long / W;
+    this.c.width = Math.round(cw * dpr); this.c.height = Math.round(ch * dpr);
+    if (this.low) {
+      this.P = Math.max(2, Math.round(long / 190));
+      this.low.width = Math.ceil(cw / this.P); this.low.height = Math.ceil(ch / this.P);
+    }
   };
   Neuron.prototype.frame = function (now) {
     var dt = Math.min(50, now - (this.last || now)), i;
@@ -612,7 +622,7 @@
     var damp = Math.pow(0.998, dt);
     for (i = this.parts.length - 1; i >= 0; i--) {
       var p = this.parts[i];
-      p.age += dt; p.vy += p.g * dt; p.vx *= damp; p.vy *= damp; p.x += p.vx * dt; p.y += p.vy * dt;
+      p.age += dt; if (this.vert) p.vx -= p.g * dt; else p.vy += p.g * dt; p.vx *= damp; p.vy *= damp; p.x += p.vx * dt; p.y += p.vy * dt;
       if (p.age > p.life) this.parts.splice(i, 1);
     }
     for (i = this.fx.length - 1; i >= 0; i--) if (now - this.fx[i].t0 > this.fx[i].life) this.fx.splice(i, 1);

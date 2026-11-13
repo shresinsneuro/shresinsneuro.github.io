@@ -140,3 +140,11 @@ a.item:hover img.thumb { transform: translateY(-3px); }
 
 /* ---------- neuron animation at the end of About ---------- */
 .neuron { display: block; width: 100%; height: auto; aspect-ratio: 1000 / 420; margin-top: 36px; cursor: pointer; }
+/* wide screens: stands upright on the right side of the page (neuron.js turns it when it is taller than wide).
+   Narrower screens keep it lying flat below the text. */
+@media (min-width: 1180px) {
+  .neuron {
+    position: fixed; right: 5vw; top: 50%; transform: translateY(-50%);
+    width: auto; height: min(86vh, 820px); aspect-ratio: 420 / 1000; margin: 0;
+  }
+}
