@@ -550,9 +550,11 @@
 
   /* ---------------- beaker under the terminals (showtime style, data-beaker) ----------------
      Drawn in screen orientation (always upright). Units are drawing units, before the quarter turn. */
-  var FILL_MS = 29000; // with the slow drip this makes the beaker full at about 30 s; then the neuron stops firing
+  // one action potential every 6 s, five in all (0.5 s to 24.5 s); firing stops at 30 s.
+  // Every drop lands in the beaker, so the level is counted in drops.
+  var EVERY_MS = 6000, STOP_MS = 30000, SPIKES = 5;
   function beakerBox(n) {
-    return n.vert ? { cx: 250, w: 320, top: 1010, bot: 1205 } : { cx: 162, w: 280, top: 440, bot: 605 };
+    return n.vert ? { cx: 250, w: 320, top: 1212, bot: 1407 } : { cx: 162, w: 280, top: 528, bot: 693 };
   }
   function surfaceY(n, b) { return b.bot - 6 - n.level * (b.bot - b.top - 24); }
   function drawBeaker(n, now, LINE, RED) {
@@ -599,13 +601,14 @@
     this.style = DRAW[c.getAttribute("data-style")] ? c.getAttribute("data-style") : "real";
     this.palette = c.getAttribute("data-palette") || "lab";
     this.beaker = c.hasAttribute("data-beaker") && this.style === "dexter" && this.palette === "showtime";
-    this.level = 0; this.ripples = []; this.start = 0; this.done = false;
+    this.level = 0; this.ripples = []; this.start = 0; this.done = false; this.fired = 0;
     this.spikes = []; this.parts = []; this.fx = []; this.trace = [];
     this.visible = true; this.cw = 0; this.last = 0;
     this.reduce = !!(window.matchMedia && matchMedia("(prefers-reduced-motion: reduce)").matches);
     this.next = performance.now() + 600;
     if (this.style === "pixel") { this.low = document.createElement("canvas"); this.lctx = this.low.getContext("2d", { willReadFrequently: true }); }
-    c.addEventListener("click", function () { self.fire(performance.now()); });
+    // click to fire (not with the beaker, which runs on its fixed 30 s schedule)
+    c.addEventListener("click", function () { if (!self.beaker) self.fire(performance.now()); });
     if ("IntersectionObserver" in window) new IntersectionObserver(function (e) { self.visible = e[0].isIntersecting; }).observe(c);
   }
   Neuron.prototype.fire = function (now) {
@@ -663,9 +666,13 @@
     if (!this.visible) return;
     this.resize();
     if (!this.cw) return;
-    if (this.beaker && !this.start) this.start = now;
+    if (this.beaker && !this.start) { this.start = now; this.next = now + 500; }
     if (!this.reduce && !this.done && now >= this.next) {
-      this.fire(now); this.next = now + (this.beaker ? 2500 : 2600 + Math.random() * 1400);
+      this.fire(now);
+      if (this.beaker) {
+        this.fired++; this.next += EVERY_MS;
+        if (this.fired >= SPIKES || this.next - this.start >= STOP_MS) this.done = true;
+      } else this.next = now + 2600 + Math.random() * 1400;
     }
     for (i = this.spikes.length - 1; i >= 0; i--) {
       var sp = this.spikes[i];
@@ -686,10 +693,10 @@
         }
         if (sy >= surfaceY(this, bx) && sy < bx.bot && sx > bx.cx - bx.w / 2 + 5 && sx < bx.cx + bx.w / 2 - 5) {
           // caught: the level follows the 30 second schedule, rising only as drops land
-          this.level = Math.min(Math.min(1, (now - this.start) / FILL_MS), this.level + 0.012);
+          // full once half of the last spike's drops are in (about 30 s); the rest land in a full beaker
+          this.level = Math.min(1, this.level + 1 / ((SPIKES - 0.5) * G.branches.length * 7));
           this.ripples.push({ x: sx, t0: now });
           this.parts.splice(i, 1);
-          if (this.level >= 1) this.done = true;
         } else if (sy >= bx.bot) { this.parts.splice(i, 1); }
       }
     }
