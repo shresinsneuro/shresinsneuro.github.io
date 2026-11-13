@@ -137,3 +137,6 @@ a.item:hover img.thumb { transform: translateY(-3px); }
   .side a.on::before { left: 0; right: 0; top: auto; bottom: -2px; width: auto; height: 1px; }
   .photos { grid-template-columns: repeat(2, 1fr); }
 }
+
+/* ---------- neuron animation at the end of About ---------- */
+.neuron { display: block; width: 100%; height: auto; aspect-ratio: 1000 / 420; margin-top: 36px; cursor: pointer; }

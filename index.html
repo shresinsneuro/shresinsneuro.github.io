@@ -51,6 +51,10 @@
     <p>More about my life experiences, philosophy and opinions in the <a class="u" href="blog.html">blog</a>.</p>
 
     <p class="quiet">Find me on <a class="u" href="https://www.linkedin.com/in/shreshta-sinha-797363186" target="_blank" rel="noopener">LinkedIn</a>, <a class="u" href="https://github.com/shresinsneuro" target="_blank" rel="noopener">GitHub</a> and <a class="u" href="https://x.com/Shresinshybrid" target="_blank" rel="noopener">X</a>.</p>
+
+    <!-- Neuron firing animation (drawn by neuron.js). data-style: real | pixel | dexter (data-palette: lab | showtime) -->
+    <canvas class="neuron" id="neuron" data-style="dexter" data-palette="showtime" title="Click to fire" role="img"
+            aria-label="Animated drawing of a neuron firing: a signal travels from the cell body down the myelinated axon to the terminals"></canvas>
   </main>
 </div>
 
@@ -81,5 +85,6 @@
     document.addEventListener("keydown", function (e) { if (e.key === "Escape" && !viewer.hidden) close(); });
   })();
 </script>
+<script src="neuron.js" defer></script>
 </body>
 </html>
