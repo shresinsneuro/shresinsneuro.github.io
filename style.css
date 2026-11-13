@@ -65,6 +65,19 @@ a.item:hover b { color: var(--gold); }
   font-size: 8px; line-height: 1.2; font-weight: 600; color: rgba(255,255,255,.85);
   border-radius: 2px; box-shadow: inset 3px 0 0 rgba(0,0,0,.3);
 }
+img.thumb { padding: 0; object-fit: cover; box-shadow: none; transition: transform .3s; }
+a.item:hover img.thumb { transform: translateY(-3px); }
+
+/* ---------- single film page ---------- */
+.film .back { display: inline-block; font-size: 13px; color: var(--muted); margin-bottom: 28px; }
+.film .back:hover { color: var(--gold); }
+.film-top { display: grid; grid-template-columns: 150px 1fr; gap: 24px; align-items: end; margin-bottom: 28px; }
+.film-top img { width: 100%; aspect-ratio: 2 / 3; object-fit: cover; border-radius: 2px; }
+.film-top p { margin-bottom: 4px; font-size: 13px; }
+.film h1 { font-size: 22px; font-weight: 600; line-height: 1.2; margin-bottom: 8px; }
+.film h2 { font-size: 13px; font-weight: 500; color: var(--gold); margin: 32px 0 8px; }
+.pager { display: flex; justify-content: space-between; gap: 16px; margin-top: 56px; padding-top: 20px; border-top: 1px solid var(--line); font-size: 13px; }
+
 .thumb.wide { aspect-ratio: 16 / 10; box-shadow: none; border: 1px solid var(--line); }
 
 /* ---------- blog post ---------- */
