@@ -603,7 +603,8 @@
     this.beaker = c.hasAttribute("data-beaker") && this.style === "dexter" && this.palette === "showtime";
     this.level = 0; this.ripples = []; this.start = 0; this.done = false; this.fired = 0;
     this.spikes = []; this.parts = []; this.fx = []; this.trace = [];
-    this.visible = true; this.cw = 0; this.last = 0;
+    // until the observer reports, assume hidden (so the beaker's 30 s starts when it is actually seen)
+    this.visible = !("IntersectionObserver" in window); this.cw = 0; this.last = 0;
     this.reduce = !!(window.matchMedia && matchMedia("(prefers-reduced-motion: reduce)").matches);
     this.next = performance.now() + 600;
     if (this.style === "pixel") { this.low = document.createElement("canvas"); this.lctx = this.low.getContext("2d", { willReadFrequently: true }); }
@@ -663,7 +664,7 @@
   Neuron.prototype.frame = function (now) {
     var dt = Math.min(50, now - (this.last || now)), i;
     this.last = now;
-    if (!this.visible) return;
+    if (!this.visible) { if (this.start) this.next += dt; return; } // off screen: pause the schedule
     this.resize();
     if (!this.cw) return;
     if (this.beaker && !this.start) { this.start = now; this.next = now + 500; }

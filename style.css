@@ -140,9 +140,10 @@ a.item:hover img.thumb { transform: translateY(-3px); }
 
 /* ---------- neuron animation at the end of About ---------- */
 .neuron { display: block; width: 100%; height: auto; aspect-ratio: 1000 / 420; margin-top: 36px; cursor: pointer; }
-.neuron[data-beaker] { aspect-ratio: 1000 / 866; }
+/* phones and tablets: upright too, centred below the text */
+.neuron[data-beaker] { width: auto; height: min(80vh, 760px); aspect-ratio: 420 / 1786; margin: 40px auto 0; }
 /* wide screens: stands upright on the right side of the page (neuron.js turns it when it is taller than wide).
-   Narrower screens keep it lying flat below the text. */
+   Narrower screens without the beaker keep it lying flat below the text. */
 @media (min-width: 1120px) {
   .neuron {
     /* 836px = left padding + menu + gap + text column (48 + 140 + 48 + 560) + a 40px gap */
