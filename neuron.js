@@ -554,7 +554,7 @@
   // Every drop lands in the beaker, so the level is counted in drops.
   var EVERY_MS = 6000, STOP_MS = 30000, SPIKES = 5;
   function beakerBox(n) {
-    return n.vert ? { cx: 250, w: 320, top: 1212, bot: 1407 } : { cx: 162, w: 280, top: 528, bot: 693 };
+    return n.vert ? { cx: 250, w: 320, top: 1576, bot: 1771 } : { cx: 162, w: 280, top: 686, bot: 851 };
   }
   function surfaceY(n, b) { return b.bot - 6 - n.level * (b.bot - b.top - 24); }
   function drawBeaker(n, now, LINE, RED) {
@@ -693,8 +693,9 @@
         }
         if (sy >= surfaceY(this, bx) && sy < bx.bot && sx > bx.cx - bx.w / 2 + 5 && sx < bx.cx + bx.w / 2 - 5) {
           // caught: the level follows the 30 second schedule, rising only as drops land
-          // full once half of the last spike's drops are in (about 30 s); the rest land in a full beaker
-          this.level = Math.min(1, this.level + 1 / ((SPIKES - 0.5) * G.branches.length * 7));
+          // the drops take several seconds to fall this far, so the beaker reads full once the first
+          // four spikes' drops are in (about 30 s); the last spike's drops land in a full beaker
+          this.level = Math.min(1, this.level + 1 / ((SPIKES - 1) * G.branches.length * 7));
           this.ripples.push({ x: sx, t0: now });
           this.parts.splice(i, 1);
         } else if (sy >= bx.bot) { this.parts.splice(i, 1); }
