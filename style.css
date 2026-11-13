@@ -41,6 +41,24 @@ main li::before { content: "•"; position: absolute; left: 0; color: var(--gold
 .u:hover { color: var(--gold); border-color: var(--gold); }
 .quiet { color: var(--muted); }
 
+/* ---------- golden quote at the top of About ---------- */
+.motto-quote { margin: 0 0 56px; text-align: center; }
+.motto-quote::before, .motto-quote::after {
+  content: ""; display: block; width: 64px; height: 1px; margin: 0 auto;
+  background: linear-gradient(90deg, transparent, #d4af37, transparent);
+}
+.motto-quote blockquote {
+  font-family: "Cormorant Garamond", Georgia, serif; font-style: italic; font-weight: 500;
+  font-size: clamp(24px, 4.4vw, 32px); line-height: 1.3; margin: 28px 0 16px;
+  color: #d4af37; /* fallback if gradient text isn't supported */
+  background: linear-gradient(100deg, #8a6a1f 0%, #e8c766 30%, #fff1b8 48%, #d4af37 62%, #9c7a2b 100%);
+  -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent;
+}
+.motto-quote figcaption {
+  font-size: 11px; letter-spacing: .3em; text-transform: uppercase; color: #b8953d; margin-bottom: 28px;
+}
+.motto-quote figcaption::before { content: "— "; }
+
 /* ---------- photo row on About ---------- */
 .photos { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; margin: 6px 0 26px; }
 .photos a { display: block; overflow: hidden; border-radius: 2px; background: #1a1a1a; }
