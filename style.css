@@ -89,6 +89,18 @@ a.item:hover img.thumb { transform: translateY(-3px); }
 
 .thumb.wide { aspect-ratio: 16 / 10; box-shadow: none; border: 1px solid var(--line); }
 
+/* ---------- blog tiles ---------- */
+.tiles { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 24px; }
+.tile { display: block; }
+.tile img {
+  display: block; width: 100%; aspect-ratio: 1 / 1; object-fit: cover; border-radius: 2px; margin-bottom: 10px;
+  filter: brightness(.9); transition: filter .3s, transform .4s;
+}
+.tile:hover img { filter: none; transform: translateY(-3px); }
+.tile b { display: block; font-weight: 500; font-size: 14px; transition: color .2s; }
+.tile:hover b { color: var(--gold); }
+.tile span { display: block; font-size: 13px; color: var(--muted); }
+
 /* ---------- blog post ---------- */
 .post .back { display: inline-block; font-size: 13px; color: var(--muted); margin-bottom: 28px; }
 .post .back:hover { color: var(--gold); }
