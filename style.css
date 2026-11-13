@@ -140,20 +140,20 @@ a.item:hover img.thumb { transform: translateY(-3px); }
 
 /* ---------- neuron animation at the end of About ---------- */
 .neuron { display: block; width: 100%; height: auto; aspect-ratio: 1000 / 420; margin-top: 36px; cursor: pointer; }
-/* phones and tablets: upright too, centred below the text */
-.neuron[data-beaker] { width: auto; height: min(80vh, 760px); aspect-ratio: 420 / 1786; margin: 40px auto 0; }
-/* wide screens: stands upright on the right side of the page (neuron.js turns it when it is taller than wide).
-   Narrower screens without the beaker keep it lying flat below the text. */
+/* phones and tablets: upright (neuron.js turns it when it is taller than wide), centred below the text */
+.neuron[data-pool] { width: auto; height: min(70vh, 620px); aspect-ratio: 420 / 1000; margin: 40px auto 0; }
+/* wide screens: upright beside the text, near the top of the page; it scrolls with the page */
 @media (min-width: 1120px) {
-  .neuron {
+  .neuron, .neuron[data-pool] {
     /* 836px = left padding + menu + gap + text column (48 + 140 + 48 + 560) + a 40px gap */
-    position: fixed; left: 836px; top: 50%; transform: translateY(-50%);
+    position: absolute; left: 836px; top: 90px;
     width: auto; height: min(60vh, 574px); aspect-ratio: 420 / 1000; margin: 0;
   }
-  /* with the beaker underneath: taller, same size neuron */
-  .neuron[data-beaker] { height: min(92vh, 960px); aspect-ratio: 420 / 1786; }
 }
 /* room to spare: sit 20% further right (836px -> 1003px from the left) */
 @media (min-width: 1260px) {
-  .neuron { left: 1003px; }
+  .neuron, .neuron[data-pool] { left: 1003px; }
 }
+
+/* blood that drips from the neuron collects at the bottom of the window (drawn by neuron.js) */
+.blood-pool { position: fixed; inset: 0; width: 100%; height: 100%; z-index: 60; pointer-events: none; }
