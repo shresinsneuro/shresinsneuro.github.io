@@ -6,62 +6,35 @@
 <title>Work · Shreshta Sinha</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,500;0,700;1,500&family=Inter:wght@400;600;800&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="style.css">
 </head>
 <body>
-
-<header class="nav">
-  <a href="index.html" class="mark">S/S</a>
-  <nav>
-    <a href="about.html">About</a>
+<div class="wrap">
+  <aside class="side"><nav>
+    <a href="index.html">About</a>
     <a href="work.html" class="on">Work</a>
     <a href="books.html">Books</a>
     <a href="films.html">Films</a>
     <a href="blog.html">Blog</a>
-  </nav>
-</header>
+  </nav></aside>
 
-<section class="block page" id="work">
-  <div class="num">II</div>
-  <div>
-    <h2>Interests &amp; Projects</h2>
-    <div class="tags">
-      <span>Neural decoding</span><span>BCIs</span><span>Neuroethics</span><span>Signal processing</span><span>Consciousness</span>
+  <!-- EDIT: replace with your real projects. To add an image, put
+       <img class="thumb wide" src="images/name.png" alt=""> in place of the empty <div class="thumb wide">. -->
+  <main class="list">
+    <div class="item">
+      <div class="thumb wide" style="--c:#16201c"></div>
+      <div><b>Focus Decoder</b><span>Reading attention from EEG.</span></div>
     </div>
-    <!-- EDIT: replace with your real projects -->
-    <div class="cards">
-      <a class="card" href="#">
-        <small>01 — EEG</small>
-        <h3>Focus Decoder</h3>
-        <p>Reading attention from brainwaves.</p>
-      </a>
-      <a class="card" href="#">
-        <small>02 — Research</small>
-        <h3>Motor Intent</h3>
-        <p>Thought, translated into movement.</p>
-      </a>
-      <a class="card" href="#">
-        <small>03 — Essay</small>
-        <h3>Who Owns a Thought?</h3>
-        <p>Privacy at the edge of the skull.</p>
-      </a>
+    <div class="item">
+      <div class="thumb wide" style="--c:#151a24"></div>
+      <div><b>Motor Intent</b><span>Decoding movement from the motor cortex.</span></div>
     </div>
-  </div>
-</section>
-
-<a class="next" href="books.html"><small>Next — III</small>Books →</a>
-
-<footer>
-  <!-- EDIT: put your real links here -->
-  <div class="links">
-    <a href="https://github.com/shresinsneuro">GitHub</a>
-    <a href="https://www.linkedin.com/">LinkedIn</a>
-    <a href="#">CV</a>
-  </div>
-  <small>© <span id="yr"></span> Shreshta Sinha</small>
-</footer>
-
-<script src="script.js"></script>
+    <div class="item">
+      <div></div>
+      <div><b>Who Owns a Thought?</b><span>An essay on neural privacy.</span></div>
+    </div>
+  </main>
+</div>
 </body>
 </html>

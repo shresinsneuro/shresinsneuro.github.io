@@ -6,50 +6,42 @@
 <title>Films · Shreshta Sinha</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,500;0,700;1,500&family=Inter:wght@400;600;800&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="style.css">
 </head>
 <body>
-
-<header class="nav">
-  <a href="index.html" class="mark">S/S</a>
-  <nav>
-    <a href="about.html">About</a>
+<div class="wrap">
+  <aside class="side"><nav>
+    <a href="index.html">About</a>
     <a href="work.html">Work</a>
     <a href="books.html">Books</a>
     <a href="films.html" class="on">Films</a>
     <a href="blog.html">Blog</a>
-  </nav>
-</header>
+  </nav></aside>
 
-<section class="block page" id="films">
-  <div class="num">IV</div>
-  <div>
-    <h2>Films</h2>
-    <p class="sub">Stories about minds.</p>
-    <!-- EDIT: swap in your own films and one-line takes -->
-    <ol class="films">
-      <li><span>Arrival</span><em>Language shapes thought.</em></li>
-      <li><span>Eternal Sunshine</span><em>Memory is identity.</em></li>
-      <li><span>Ex Machina</span><em>Who's testing whom?</em></li>
-      <li><span>Her</span><em>Love, outsourced.</em></li>
-      <li><span>Interstellar</span><em>Will over gravity.</em></li>
-    </ol>
-  </div>
-</section>
-
-<a class="next" href="blog.html"><small>Next — V</small>Blog →</a>
-
-<footer>
-  <!-- EDIT: put your real links here -->
-  <div class="links">
-    <a href="https://github.com/shresinsneuro">GitHub</a>
-    <a href="https://www.linkedin.com/">LinkedIn</a>
-    <a href="#">CV</a>
-  </div>
-  <small>© <span id="yr"></span> Shreshta Sinha</small>
-</footer>
-
-<script src="script.js"></script>
+  <!-- EDIT: swap in your own films and one-line takes. --c sets the poster color. -->
+  <main class="list">
+    <div class="item">
+      <div class="thumb" style="--c:#3b4148">Arrival</div>
+      <div><b>Arrival</b><span>Denis Villeneuve, 2016. Language shapes thought.</span></div>
+    </div>
+    <div class="item">
+      <div class="thumb" style="--c:#2b4a5a">Eternal Sunshine of the Spotless Mind</div>
+      <div><b>Eternal Sunshine of the Spotless Mind</b><span>Michel Gondry, 2004. Memory is identity.</span></div>
+    </div>
+    <div class="item">
+      <div class="thumb" style="--c:#4a1e1e">Ex Machina</div>
+      <div><b>Ex Machina</b><span>Alex Garland, 2014. Who's testing whom?</span></div>
+    </div>
+    <div class="item">
+      <div class="thumb" style="--c:#6b2f24">Her</div>
+      <div><b>Her</b><span>Spike Jonze, 2013. Love, outsourced.</span></div>
+    </div>
+    <div class="item">
+      <div class="thumb" style="--c:#2a2a2a">Interstellar</div>
+      <div><b>Interstellar</b><span>Christopher Nolan, 2014. Will over gravity.</span></div>
+    </div>
+  </main>
+</div>
 </body>
 </html>
