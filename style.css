@@ -140,6 +140,7 @@ a.item:hover img.thumb { transform: translateY(-3px); }
 
 /* ---------- neuron animation at the end of About ---------- */
 .neuron { display: block; width: 100%; height: auto; aspect-ratio: 1000 / 420; margin-top: 36px; cursor: pointer; }
+.neuron[data-beaker] { aspect-ratio: 1000 / 620; }
 /* wide screens: stands upright on the right side of the page (neuron.js turns it when it is taller than wide).
    Narrower screens keep it lying flat below the text. */
 @media (min-width: 1120px) {
@@ -148,4 +149,10 @@ a.item:hover img.thumb { transform: translateY(-3px); }
     position: fixed; left: 836px; top: 50%; transform: translateY(-50%);
     width: auto; height: min(60vh, 574px); aspect-ratio: 420 / 1000; margin: 0;
   }
+  /* with the beaker underneath: taller, same size neuron */
+  .neuron[data-beaker] { height: min(73vh, 700px); aspect-ratio: 420 / 1220; }
+}
+/* room to spare: sit 20% further right (836px -> 1003px from the left) */
+@media (min-width: 1260px) {
+  .neuron { left: 1003px; }
 }

@@ -540,11 +540,54 @@
     });
     ctx.fillStyle = RED2;
     n.parts.forEach(function (p) {
-      ctx.globalAlpha = 1 - p.age / p.life;
+      ctx.globalAlpha = n.beaker ? 1 : 1 - p.age / p.life;
       var sp = Math.hypot(p.vx, p.vy);
       ctx.beginPath(); ctx.ellipse(p.x, p.y, p.r * (1 + sp * 18), p.r, Math.atan2(p.vy, p.vx), 0, TAU); ctx.fill();
     });
     ctx.globalAlpha = 1;
+    if (n.beaker) drawBeaker(n, now, LINE, RED);
+  }
+
+  /* ---------------- beaker under the terminals (showtime style, data-beaker) ----------------
+     Drawn in screen orientation (always upright). Units are drawing units, before the quarter turn. */
+  var FILL_MS = 29000; // with the slow drip this makes the beaker full at about 30 s; then the neuron stops firing
+  function beakerBox(n) {
+    return n.vert ? { cx: 250, w: 320, top: 1010, bot: 1205 } : { cx: 162, w: 280, top: 440, bot: 605 };
+  }
+  function surfaceY(n, b) { return b.bot - 6 - n.level * (b.bot - b.top - 24); }
+  function drawBeaker(n, now, LINE, RED) {
+    var ctx = n.ctx, b = beakerBox(n), k = n.S * n.dpr, x0 = b.cx - b.w / 2, x1 = b.cx + b.w / 2, r = 16;
+    ctx.setTransform(k, 0, 0, k, 0, 0);
+    function body() {
+      ctx.beginPath(); ctx.moveTo(x0, b.top); ctx.lineTo(x0, b.bot - r); ctx.quadraticCurveTo(x0, b.bot, x0 + r, b.bot);
+      ctx.lineTo(x1 - r, b.bot); ctx.quadraticCurveTo(x1, b.bot, x1, b.bot - r); ctx.lineTo(x1, b.top);
+    }
+    if (n.level > 0) {
+      var surf = surfaceY(n, b);
+      ctx.save(); body(); ctx.closePath(); ctx.clip();
+      ctx.fillStyle = RED; ctx.beginPath(); ctx.moveTo(x0, b.bot + 2);
+      for (var u = x0; u <= x1 + 6; u += 6) {
+        var y = surf;
+        n.ripples.forEach(function (rp) {
+          var a = now - rp.t0, d = Math.abs(u - rp.x);
+          y -= 3 * Math.exp(-a / 450) * Math.exp(-d / 45) * Math.cos(d / 9 - a / 70);
+        });
+        ctx.lineTo(Math.min(u, x1), y);
+      }
+      ctx.lineTo(x1, b.bot + 2); ctx.closePath(); ctx.fill();
+      ctx.restore();
+    }
+    ctx.strokeStyle = LINE; ctx.lineWidth = 2.6; ctx.lineCap = ctx.lineJoin = "round";
+    body(); ctx.stroke();
+    ctx.beginPath(); // lip and pouring spout
+    ctx.moveTo(x0, b.top); ctx.quadraticCurveTo(x0, b.top - 7, x0 - 12, b.top - 10);
+    ctx.moveTo(x1, b.top); ctx.lineTo(x1 + 7, b.top - 7); ctx.stroke();
+    ctx.lineWidth = 1.6; ctx.beginPath(); // measuring marks
+    for (var i = 1; i <= 4; i++) {
+      var my = b.bot - 6 - i * (b.bot - b.top - 24) / 4.4;
+      ctx.moveTo(x0 + 10, my); ctx.lineTo(x0 + (i % 2 ? 34 : 22), my);
+    }
+    ctx.stroke();
   }
 
   var DRAW = { real: drawReal, pixel: drawPixel, dexter: drawDexter };
@@ -555,6 +598,8 @@
     this.c = c; this.ctx = c.getContext("2d");
     this.style = DRAW[c.getAttribute("data-style")] ? c.getAttribute("data-style") : "real";
     this.palette = c.getAttribute("data-palette") || "lab";
+    this.beaker = c.hasAttribute("data-beaker") && this.style === "dexter" && this.palette === "showtime";
+    this.level = 0; this.ripples = []; this.start = 0; this.done = false;
     this.spikes = []; this.parts = []; this.fx = []; this.trace = [];
     this.visible = true; this.cw = 0; this.last = 0;
     this.reduce = !!(window.matchMedia && matchMedia("(prefers-reduced-motion: reduce)").matches);
@@ -565,7 +610,7 @@
   }
   Neuron.prototype.fire = function (now) {
     var last = this.spikes[this.spikes.length - 1];
-    if (last && now - last.t0 < 500) return; // refractory period
+    if (this.done || (last && now - last.t0 < 500)) return; // beaker full, or refractory period
     var ins = [];
     for (var i = 0; i < 3; i++) ins.push({ leaf: G.leaves[Math.floor(Math.random() * G.leaves.length)], st: Math.random() * 260, dur: 380 + Math.random() * 120 });
     this.spikes.push({ t0: now, inputs: ins, released: false });
@@ -576,8 +621,13 @@
       var o = b.bouton;
       for (var k = 0; k < 7; k++) {
         var a = o.a + (Math.random() - 0.5) * 1.8, sp = 0.03 + Math.random() * 0.05;
-        self.parts.push({ x: o.x + Math.cos(o.a) * 10, y: o.y + Math.sin(o.a) * 10, vx: Math.cos(a) * sp, vy: Math.sin(a) * sp,
-          age: 0, life: 700 + Math.random() * 500, r: 2 + Math.random() * 2, g: show ? 0.0004 : 0, k: k % 3 });
+        var vx = Math.cos(a) * sp, vy = Math.sin(a) * sp;
+        if (self.beaker) { // slow drip: a little sideways drift, a gentle start downwards (screen down = -x when upright)
+          var side = (Math.random() - 0.5) * 0.012, down = 0.005 + Math.random() * 0.01;
+          if (self.vert) { vx = -down; vy = side; } else { vx = side; vy = down; }
+        }
+        self.parts.push({ x: o.x + Math.cos(o.a) * 10, y: o.y + Math.sin(o.a) * 10, vx: vx, vy: vy,
+          age: 0, life: self.beaker ? 15000 : 700 + Math.random() * 500, r: 2 + Math.random() * 2, g: show ? (self.beaker ? 0.00018 : 0.0004) : 0, k: k % 3 });
       }
       if (show) {
         var dots = [{ dx: 0, dy: 0, r: 6 + Math.random() * 3 }];
@@ -600,7 +650,7 @@
     if (cw === this.cw && ch === this.ch && dpr === this.dpr) return;
     this.cw = cw; this.ch = ch; this.dpr = dpr; this.vert = ch > cw;
     var long = this.vert ? ch : cw;
-    this.S = long / W;
+    this.S = cw / (this.vert ? H : W);
     this.c.width = Math.round(cw * dpr); this.c.height = Math.round(ch * dpr);
     if (this.low) {
       this.P = Math.max(2, Math.round(long / 190));
@@ -613,7 +663,10 @@
     if (!this.visible) return;
     this.resize();
     if (!this.cw) return;
-    if (!this.reduce && now >= this.next) { this.fire(now); this.next = now + 2600 + Math.random() * 1400; }
+    if (this.beaker && !this.start) this.start = now;
+    if (!this.reduce && !this.done && now >= this.next) {
+      this.fire(now); this.next = now + (this.beaker ? 2500 : 2600 + Math.random() * 1400);
+    }
     for (i = this.spikes.length - 1; i >= 0; i--) {
       var sp = this.spikes[i];
       if (!sp.released && now - sp.t0 >= T_BOUTON) { sp.released = true; this.release(now); }
@@ -623,8 +676,24 @@
     for (i = this.parts.length - 1; i >= 0; i--) {
       var p = this.parts[i];
       p.age += dt; if (this.vert) p.vx -= p.g * dt; else p.vy += p.g * dt; p.vx *= damp; p.vy *= damp; p.x += p.vx * dt; p.y += p.vy * dt;
-      if (p.age > p.life) this.parts.splice(i, 1);
+      if (p.age > p.life) { this.parts.splice(i, 1); continue; }
+      if (this.beaker) {
+        var bx = beakerBox(this), sx = this.vert ? p.y : p.x, sy = this.vert ? W - p.x : p.y;
+        var lo = bx.cx - bx.w / 2 + 14, hi = bx.cx + bx.w / 2 - 14;
+        if (sx < lo || sx > hi) { // nudge back over the beaker
+          var push = (sx < lo ? 1 : -1) * 0.02;
+          if (this.vert) p.vy = push; else p.vx = push;
+        }
+        if (sy >= surfaceY(this, bx) && sy < bx.bot && sx > bx.cx - bx.w / 2 + 5 && sx < bx.cx + bx.w / 2 - 5) {
+          // caught: the level follows the 30 second schedule, rising only as drops land
+          this.level = Math.min(Math.min(1, (now - this.start) / FILL_MS), this.level + 0.012);
+          this.ripples.push({ x: sx, t0: now });
+          this.parts.splice(i, 1);
+          if (this.level >= 1) this.done = true;
+        } else if (sy >= bx.bot) { this.parts.splice(i, 1); }
+      }
     }
+    for (i = this.ripples.length - 1; i >= 0; i--) if (now - this.ripples[i].t0 > 1500) this.ripples.splice(i, 1);
     for (i = this.fx.length - 1; i >= 0; i--) if (now - this.fx[i].t0 > this.fx[i].life) this.fx.splice(i, 1);
     DRAW[this.style](this, now);
   };
