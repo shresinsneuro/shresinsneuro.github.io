@@ -173,3 +173,27 @@ a.item:hover img.thumb { transform: translateY(-3px); }
 }
 .fake-cursor.clicked .fake-cursor-ring { animation: fake-click .5s ease-out forwards; }
 @keyframes fake-click { from { opacity: .9; transform: scale(.3); } to { opacity: 0; transform: scale(1.6); } }
+
+/* ---------- poster grid (Films and Books) ---------- */
+.wrap.wide { grid-template-columns: 140px minmax(0, 1fr); max-width: 1500px; padding-right: 48px; }
+.posters { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 40px 26px; }
+.poster { display: flex; flex-direction: column; align-items: center; text-align: center; }
+.poster-img {
+  display: block; width: 100%; aspect-ratio: 2 / 3; object-fit: cover; border-radius: 10px;
+  background: #1a1a1c; box-shadow: 0 6px 18px rgba(0,0,0,.45); outline: 2px solid transparent; outline-offset: 0;
+  transition: transform .25s, outline-color .2s, box-shadow .25s;
+}
+.poster-img.card-poster { display: flex; align-items: flex-end; padding: 12px; font-size: 13px; font-weight: 600; text-align: left; }
+.poster:hover .poster-img, .poster:focus-visible .poster-img {
+  transform: scale(1.03); outline-color: #fff; box-shadow: 0 10px 28px rgba(0,0,0,.6);
+}
+.poster:focus-visible { outline: none; }
+.poster b {
+  margin-top: 14px; font-weight: 600; font-size: 15px; line-height: 1.3; color: #fff;
+  display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;
+}
+@media (max-width: 640px) {
+  .wrap.wide { grid-template-columns: 1fr; padding-right: 16px; }
+  .posters { grid-template-columns: repeat(auto-fill, minmax(110px, 1fr)); gap: 28px 14px; }
+  .poster b { font-size: 13px; margin-top: 10px; }
+}
