@@ -1,0 +1,380 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Neuron, speaking in light</title>
+<style>
+/* Shown inside an iframe on work.html. Based on the claude.ai artifact, with the
+   page background matched to the site and no voltage readout or code window. */
+:root{color-scheme:dark;--bg:#0b0b0c;--ink:#5c6a7d}
+*{box-sizing:border-box;min-width:0}
+html,body{height:100%}
+body{margin:0;background:var(--bg);color:var(--ink);font:13px/1.4 ui-monospace,"SF Mono",Menlo,Consolas,"DejaVu Sans Mono",monospace;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;overflow:hidden}
+.frame{--h:min(calc(100vh - 40px),calc(100vw * 16 / 9));--h:min(calc(100svh - 40px),calc(100vw * 16 / 9));height:var(--h);width:calc(var(--h) * 9 / 16);position:relative;border-radius:10px;overflow:hidden;background:#02050a;box-shadow:0 0 0 1px #0d141e}
+canvas{position:absolute;inset:0;width:100%;height:100%;display:block;touch-action:none;cursor:crosshair}
+canvas:focus-visible{outline:2px solid #3a86df;outline-offset:-2px}
+.hint{margin:0;text-align:center;padding:0 8px;font-size:11.5px;white-space:nowrap}
+@media (max-width:600px){.frame{border-radius:0;box-shadow:none}}
+</style>
+</head>
+<body>
+<div class="frame"><canvas id="c" tabindex="0" role="img" aria-label="A 3D neuron drawn in glowing characters, firing action potentials"></canvas></div>
+<p class="hint">tap or press space to fire · drag to turn</p>
+<script id="neuron">
+{
+// neuron.js: a pyramidal cell, speaking in light
+// every membrane is a cloud of points; every point lands in a character cell
+
+// --- canvas: one 9:16 reel frame, carved into character cells
+const cv = document.getElementById('c'), out = cv.getContext('2d');
+const W = 1080, H = 1920, CW = 8, CH = 13;
+const COLS = W / CW, ROWS = Math.ceil(H / CH);
+const MONO = 'ui-monospace, "SF Mono", Menlo, Consolas, "DejaVu Sans Mono", monospace';
+const RAMP = ' .,:;-=+*ox#%@';
+const BLUE = ['#0b2148', '#0f346f', '#154c9c', '#1f68c4', '#3586df', '#5ea6ee', '#9ccbf7', '#e0f2ff'];
+const CYAN = ['#0a3346', '#0e5068', '#147692', '#1f9fbc', '#40c2da', '#7cdced', '#bbf0f8', '#f4fdff'];
+const GAIN = .15, still = matchMedia('(prefers-reduced-motion: reduce)').matches;
+const rnd = (a => () => { a = a + 0x6d2b79f5 | 0; let t = Math.imul(a ^ a >>> 15, 1 | a); t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t; return ((t ^ t >>> 14) >>> 0) / 4294967296; })(1123);
+const add = (a, b) => [a[0] + b[0], a[1] + b[1], a[2] + b[2]];
+const sub = (a, b) => [a[0] - b[0], a[1] - b[1], a[2] - b[2]];
+const mul = (a, s) => [a[0] * s, a[1] * s, a[2] * s];
+const cross = (a, b) => [a[1] * b[2] - a[2] * b[1], a[2] * b[0] - a[0] * b[2], a[0] * b[1] - a[1] * b[0]];
+const unit = a => mul(a, 1 / (Math.hypot(...a) || 1));
+const wobble = (d, j) => unit(add(d, [(rnd() - .5) * j, (rnd() - .5) * j, (rnd() - .5) * j]));
+
+// --- morphology: grow the cell outward from its soma, one branch at a time
+const DEND = 0, SOMA = 1, AXON = 2, MYEL = 3, NODE = 4, TERM = 5, BOUT = 6, NUC = 7;
+const R = .13, segs = [], tips = [], ends = [];
+function seg(a, b, r0, r1, parent, kind) {
+  const d0 = parent < 0 ? 0 : segs[parent].d0 + segs[parent].len;
+  segs.push({ a, b, r0, r1, parent, kind, d0, len: Math.hypot(...sub(b, a)) });
+  return segs.length - 1;
+}
+function grow(p, dir, len, r, depth, parent, kind, pull) {
+  const n = Math.max(2, Math.round(len / .045));
+  let s = parent;
+  for (let i = 0; i < n; i++) {
+    dir = unit(add(wobble(dir, .5), pull));
+    const q = add(p, mul(dir, len / n));
+    s = seg(p, q, r * (1 - .3 * i / n), r * (1 - .3 * (i + 1) / n), s, kind);
+    p = q;
+  }
+  if (depth > 0) {
+    const forks = rnd() < .3 ? 3 : 2;
+    for (let j = 0; j < forks; j++) {
+      const side = unit([rnd() - .5, (rnd() - .5) * .5, rnd() - .5]);
+      grow(p, unit(add(dir, mul(side, 1.1))), len * (.6 + rnd() * .25), r * .7, depth - 1, s, kind, pull);
+    }
+  } else (kind === TERM ? ends : tips).push(s);
+}
+// the apical trunk climbs toward the cortical surface, shedding thin obliques
+let p = [0, R * .95, 0], dir = [0, 1, 0], s = -1, r = .034, q;
+for (let i = 0; i < 13; i++) {
+  dir = unit(add(wobble(dir, .15), [0, .3, 0]));
+  q = add(p, mul(dir, .045));
+  s = seg(p, q, r, r * .965, s, DEND); r *= .965; p = q;
+  if (i % 3 === 2) {
+    const a = rnd() * 6.28;
+    grow(p, unit([Math.cos(a), .3, Math.sin(a)]), .2 + rnd() * .12, r * .4, 1, s, DEND, [0, .05, 0]);
+  }
+}
+for (let j = 0; j < 4; j++) {                       // ...then opens into a tuft
+  const a = j * 1.57 + rnd() * .7;
+  grow(p, unit([Math.cos(a), 1, Math.sin(a)]), .22, r * .7, 3, s, DEND, [0, .1, 0]);
+}
+for (let j = 0; j < 6; j++) {                       // basal dendrites fan out below
+  const a = j * 1.05 + rnd() * .5, d = unit([Math.cos(a), -.05 - rnd() * .4, Math.sin(a)]);
+  grow(mul(d, R * .9), d, .24 + rnd() * .1, .02, 3, -1, DEND, [0, -.02, 0]);
+}
+// the axon: hillock, initial segment, then myelin broken by nodes of Ranvier
+const nodes = [];
+p = [0, -R * .95, 0]; dir = [0, -1, 0];
+q = add(p, [0, -.07, 0]); s = seg(p, q, .045, .013, -1, AXON); p = q;
+q = add(p, [0, -.06, 0]); s = seg(p, q, .013, .012, s, AXON); p = q;
+for (let i = 0; i <= 6; i++) {
+  dir = unit(add(wobble(dir, .25), [0, -.5, 0]));
+  q = add(p, mul(dir, .02)); s = seg(p, q, .014, .014, s, NODE); p = q;
+  nodes.push(segs[s].d0);
+  if (i === 6) break;
+  q = add(p, mul(dir, .14)); s = seg(p, q, .036, .036, s, MYEL); p = q;
+}
+for (let j = 0; j < 3; j++) {                       // terminals, each tipped with a bouton
+  const a = j * 2.1 + rnd();
+  grow(p, unit([Math.cos(a) * .9, -1, Math.sin(a) * .9]), .17, .009, 3, s, TERM, [0, -.07, 0]);
+}
+
+// --- membrane: scatter points over every surface so the light has something to catch
+const SHINE = [.5, .3, .5, .55, .9, .5, .5, .2];
+const P = [], NV = [], BR = [], DI = [], SG = [], KI = [], RM = [];
+function dot(p, n, d, s, k, b, rim) { P.push(...p); NV.push(...n); DI.push(d); SG.push(s); KI.push(k); BR.push(b); RM.push(rim); }
+segs.forEach((g, i) => {
+  const ax = unit(sub(g.b, g.a)), u = unit(cross(ax, Math.abs(ax[1]) < .9 ? [0, 1, 0] : [1, 0, 0])), w = cross(ax, u);
+  const rings = Math.max(1, Math.ceil(g.len / .011));
+  for (let k = 0; k < rings; k++) {
+    const t = (k + rnd()) / rings, c = add(g.a, mul(sub(g.b, g.a), t)), d = g.d0 + g.len * t;
+    let r = g.r0 + (g.r1 - g.r0) * t;
+    if (g.kind === MYEL) r *= Math.pow(Math.sin(Math.PI * t), .3);   // sausage-shaped sheath
+    const m = Math.max(3, Math.round(6.28 * r / .011)), ph = rnd() * 6.28;
+    for (let j = 0; j < m; j++) {
+      const a = ph + j * 6.28 / m, n = add(mul(u, Math.cos(a)), mul(w, Math.sin(a)));
+      dot(add(c, mul(n, r)), n, d, i, g.kind, SHINE[g.kind], r > .016 ? 1 : 0);
+    }
+    if (g.kind === DEND && r < .014 && rnd() < .3) {                // a dendritic spine
+      const a = rnd() * 6.28, n = add(mul(u, Math.cos(a)), mul(w, Math.sin(a)));
+      dot(add(c, mul(n, r + .013)), n, d, i, DEND, .9, 0);
+    }
+  }
+});
+function sphere(c, r, n, k, d, sq, b) {
+  for (let i = 0; i < n; i++) {
+    const y = 1 - 2 * (i + .5) / n, h = Math.sqrt(1 - y * y), a = i * 2.39996;
+    const nn = [Math.cos(a) * h, y, Math.sin(a) * h], taper = 1 - sq * Math.max(0, y);
+    dot(add(c, [nn[0] * r * taper, nn[1] * r * (1 + sq), nn[2] * r * taper]), nn, d, -1, k, b, 1);
+  }
+}
+sphere([0, 0, 0], R, 1500, SOMA, 0, .3, SHINE[SOMA]);   // teardrop soma, pointing up the trunk
+sphere([0, -.01, 0], .055, 320, NUC, 0, 0, SHINE[NUC]);   // nucleus
+sphere([.012, .005, .02], .016, 60, NUC, 0, 0, .6);        // nucleolus
+const bouts = ends.map(i => ({ at: segs[i].b, d: segs[i].d0 + segs[i].len }));
+bouts.forEach(b => sphere(b.at, .02, 70, BOUT, b.d, 0, SHINE[BOUT]));
+const NP = BR.length, PX = new Float32Array(P), NX = new Float32Array(NV), B = new Float32Array(BR);
+const D = new Float32Array(DI), S = new Int32Array(SG), KD = new Uint8Array(KI), RIM = new Uint8Array(RM);
+let lo = 1e9, hi = -1e9;
+for (let i = 1; i < PX.length; i += 3) { lo = Math.min(lo, PX[i]); hi = Math.max(hi, PX[i]); }
+const OY = (lo + hi) / 2, SC = 1150 / (hi - lo), CX = W / 2, CY = 960, CAM = 4.5;
+const paths = new Map();
+function pathTo(tip) {
+  if (!paths.has(tip)) { const m = new Uint8Array(segs.length); for (let s = tip; s >= 0; s = segs[s].parent) m[s] = 1; paths.set(tip, m); }
+  return paths.get(tip);
+}
+
+// --- state: membrane potential, travelling signals, released transmitter
+const REST = -70, THRESH = -55, TAU = .32;
+let vm = REST, shown = REST, peak = 0, refr = 0, spikes = 0, lastSpike = -9, nudge = 0, somaGlow = 0, t = 0, spin = 0, active = 0;
+const epsps = [], aps = [], puffs = [], trace = new Float32Array(150).fill(REST);
+const motes = Array.from({ length: 240 }, () => ({ x: (rnd() - .5) * 3.4, y: (rnd() - .5) * 3.6, z: (rnd() - .5) * 3.4, ph: rnd() * 6.28, b: .12 + rnd() * .3 }));
+
+// --- dendrites: small potentials arrive far out and drift toward the soma
+function whisper() {
+  const tip = tips[rnd() * tips.length | 0], far = segs[tip].d0 + segs[tip].len;
+  epsps.push({ path: pathTo(tip), front: far, v: .5 + rnd() * .35, amp: .7 + rnd() * .5, mv: (3.5 + rnd() * 3) * Math.exp(-far / 2.2) });
+}
+
+// --- integrate: the soma sums what arrives while leak pulls it back to rest
+function integrate(dt) {
+  for (let i = epsps.length - 1; i >= 0; i--) {
+    const e = epsps[i];
+    e.front -= e.v * dt;
+    if (e.front <= 0) { vm += e.mv; somaGlow += .08; epsps.splice(i, 1); }
+  }
+  vm += (REST - vm) * Math.min(1, dt / TAU);
+  refr -= dt;
+  if (vm >= THRESH) fire();
+}
+
+// --- fire: threshold crossed; the soma flashes and the axon carries the news down
+function fire() {
+  if (refr > 0) return;
+  spikes++; lastSpike = t; refr = .15; vm = -78; somaGlow = 1.6; peak = 1;
+  aps.push({ t0: t, front: 0, env: 1, hit: new Uint8Array(bouts.length) });
+}
+
+// --- conduct: saltatory conduction, the spike leaps from node to node
+const T_IS = .05, HOP = .1, V_TERM = .75, REACH = Math.max(...bouts.map(b => b.d));
+function frontAt(age) {
+  if (age < T_IS) return nodes[0] * age / T_IS;
+  const k = (age - T_IS) / HOP, i = k | 0;
+  if (i < nodes.length - 1) {
+    const f = Math.max(0, (k - i - .5) * 2);                // rest at the node, then jump
+    return nodes[i] + (nodes[i + 1] - nodes[i]) * f * f * (3 - 2 * f);
+  }
+  return nodes[nodes.length - 1] + (age - T_IS - HOP * (nodes.length - 1)) * V_TERM;
+}
+function conduct(dt) {
+  for (let i = aps.length - 1; i >= 0; i--) {
+    const ap = aps[i];
+    ap.front = frontAt(t - ap.t0);
+    if (ap.front > REACH) ap.env -= dt * 2.2;
+    if (ap.env <= 0) aps.splice(i, 1); else release(ap);
+  }
+}
+
+// --- release: every bouton the spike reaches lets go a puff of transmitter
+function release(ap) {
+  bouts.forEach((b, j) => {
+    if (ap.hit[j] || ap.front < b.d) return;
+    ap.hit[j] = 1;
+    for (let n = 0; n < 7; n++) puffs.push({ p: b.at.slice(), v: mul(wobble([0, -1, 0], 2.4), .1 + rnd() * .12), age: 0, life: .8 + rnd() * .8 });
+  });
+}
+
+function step(dt) {
+  t += dt;
+  if (!still && rnd() < 9 * dt) whisper();
+  if (!still && t - Math.max(lastSpike, nudge) > 3.6) { nudge = t; for (let i = 0; i < 5; i++) whisper(); }
+  integrate(dt); conduct(dt);
+  somaGlow *= Math.exp(-dt / .22);
+  for (let i = puffs.length - 1; i >= 0; i--) {
+    const f = puffs[i]; f.age += dt; f.p = add(f.p, mul(f.v, dt));
+    if (f.age > f.life) puffs.splice(i, 1);
+  }
+  for (const m of motes) { m.y += dt * .025; if (m.y > 1.8) m.y -= 3.6; }
+  shown = peak ? 32 : vm; peak = 0;               // the spike itself is ~1 ms: show its peak
+  trace.copyWithin(0, 1); trace[trace.length - 1] = shown;
+}
+
+// --- glow: how much signal is passing through point i right now
+function glow(i) {
+  const k = KD[i], d = D[i];
+  let a = 0;
+  if (k === DEND) {
+    for (const e of epsps) if (e.path[S[i]]) {
+      const x = d - e.front;
+      if (x > -.05) a += e.amp * (x < 0 ? Math.exp(-x * x / .0004) : Math.exp(-x / .09));
+    }
+    if (somaGlow > .05) a += somaGlow * Math.exp(-d / .16) * .7;   // the spike echoes back up
+  } else if (k === SOMA || k === NUC) {
+    a = somaGlow * (k === SOMA ? .9 : .5) + Math.max(0, vm - REST) * .025;
+  } else {
+    for (const ap of aps) {
+      const x = ap.front - d;
+      if (x < -.03) continue;
+      const lam = k === NODE ? .3 : k === BOUT ? .35 : k === MYEL ? .1 : .1;
+      const amp = k === NODE ? 3 : k === BOUT ? 2.4 : k === MYEL ? .8 : 1.6;
+      a += amp * ap.env * (x < 0 ? Math.exp(-x * x / .0002) : Math.exp(-x / lam));
+    }
+  }
+  return a;
+}
+
+// --- project: turn the cell, add perspective, drop each point into its character cell
+const acc = new Float32Array(COLS * ROWS), hot = new Float32Array(COLS * ROWS), soft = new Float32Array(COLS * ROWS);
+function splat(x, y, v, a, blur) {
+  if (x < 0 || y < 0 || x >= W || y >= ROWS * CH) return;
+  const i = (y / CH | 0) * COLS + (x / CW | 0);
+  if (blur) soft[i] += v + a; else { acc[i] += v + a; hot[i] += a; }
+}
+function view(p, yaw, pitch) {
+  const cy = Math.cos(yaw), sy = Math.sin(yaw), cp = Math.cos(pitch), sp = Math.sin(pitch);
+  const x1 = p[0] * cy + p[2] * sy, z1 = p[2] * cy - p[0] * sy, y = p[1] - OY;
+  return [x1, y * cp - z1 * sp, y * sp + z1 * cp];
+}
+function project(yaw, pitch, ox, oy, oz, scale, dim, blur, every, live) {
+  const cy = Math.cos(yaw), sy = Math.sin(yaw), cp = Math.cos(pitch), sp = Math.sin(pitch);
+  for (let i = 0; i < NP; i += every) {
+    const x = PX[3 * i], y = PX[3 * i + 1] - OY, z = PX[3 * i + 2];
+    const x1 = x * cy + z * sy, z1 = z * cy - x * sy, y2 = y * cp - z1 * sp, z2 = y * sp + z1 * cp;
+    const X = x1 * scale + ox, Y = y2 * scale + oy, Z = z2 * scale + oz, s = SC * CAM / (CAM - Z);
+    let v = B[i] * dim * (.85 + .2 * Z);
+    if (RIM[i]) {
+      const nz = NX[3 * i + 1] * sp + (NX[3 * i + 2] * cy - NX[3 * i] * sy) * cp, e = 1 - Math.abs(nz);
+      v *= .2 + 1.1 * e * e;                                 // glassy edges catch the light
+    }
+    const a = live ? glow(i) : 0;
+    active += a;
+    splat(CX + X * s, CY - Y * s, v, a, blur);
+  }
+}
+
+// --- light: draw every lit cell, then let the light bloom softly
+let k = 1, gw = CW, gh = CH, atlas, near, far, mips = [], bg, shade;
+const layer = (w, h) => { const c = document.createElement('canvas'); c.width = Math.max(1, Math.round(w)); c.height = Math.max(1, Math.round(h)); return c; };
+function build() {
+  const box = cv.getBoundingClientRect();
+  k = Math.min(1, Math.max(.45, box.width * (devicePixelRatio || 1) / W));
+  cv.width = Math.round(W * k); cv.height = Math.round(H * k);
+  gw = CW * k; gh = CH * k;
+  near = layer(cv.width, cv.height); far = layer(cv.width, cv.height);
+  mips = [layer(cv.width / 2, cv.height / 2)];
+  while (mips.length < 5) { const m = mips[mips.length - 1]; mips.push(layer(m.width / 2, m.height / 2)); }
+  const AW = Math.ceil(gw), AH = Math.ceil(gh), g = (atlas = layer(AW * RAMP.length, AH * 16)).getContext('2d');
+  g.font = `${11.5 * k}px ${MONO}`; g.textAlign = 'center'; g.textBaseline = 'middle';
+  BLUE.concat(CYAN).forEach((col, row) => {
+    g.fillStyle = col;
+    for (let j = 1; j < RAMP.length; j++) g.fillText(RAMP[j], (j + .5) * AW, (row + .5) * AH);
+  });
+  bg = out.createRadialGradient(CX * k, CY * k, 0, CX * k, CY * k, 1150 * k);
+  bg.addColorStop(0, '#081630'); bg.addColorStop(.55, '#040a16'); bg.addColorStop(1, '#010206');
+  shade = out.createRadialGradient(CX * k, CY * k, 380 * k, CX * k, CY * k, 1250 * k);
+  shade.addColorStop(0, 'rgba(0,0,0,0)'); shade.addColorStop(1, 'rgba(0,0,0,.6)');
+}
+function cell(g, i, v, warm) {
+  const tone = 1 - Math.exp(-v * GAIN);
+  if (tone < .06) return;
+  const top = RAMP.length - 1, AW = Math.ceil(gw), AH = Math.ceil(gh);
+  const j = Math.min(top, Math.max(1, Math.round(tone * top + (Math.random() - .5) * .9)));
+  const row = Math.min(7, tone * 8 | 0) + (warm ? 8 : 0);
+  g.drawImage(atlas, j * AW, row * AH, AW, AH, Math.round(i % COLS * gw), Math.round((i / COLS | 0) * gh), AW, AH);
+}
+function paint() {
+  const n = near.getContext('2d'), f = far.getContext('2d');
+  n.clearRect(0, 0, near.width, near.height); f.clearRect(0, 0, far.width, far.height);
+  for (let i = 0; i < acc.length; i++) {
+    if (acc[i] > .03) cell(n, i, acc[i], hot[i] > acc[i] * .4);
+    if (soft[i] > .03) cell(f, i, soft[i], false);
+    acc[i] = hot[i] = soft[i] = 0;
+  }
+}
+function bloom() {
+  const w = cv.width, h = cv.height;
+  let g = mips[0].getContext('2d');
+  g.clearRect(0, 0, w, h);
+  g.drawImage(near, 0, 0, mips[0].width, mips[0].height);
+  g.drawImage(far, 0, 0, mips[0].width, mips[0].height);
+  for (let i = 1; i < mips.length; i++) {
+    g = mips[i].getContext('2d');
+    g.clearRect(0, 0, w, h); g.filter = 'blur(1px)';
+    g.drawImage(mips[i - 1], 0, 0, mips[i].width, mips[i].height); g.filter = 'none';
+  }
+  out.setTransform(1, 0, 0, 1, 0, 0); out.globalAlpha = 1;
+  out.globalCompositeOperation = 'source-over'; out.fillStyle = bg; out.fillRect(0, 0, w, h);
+  out.globalCompositeOperation = 'lighter';
+  for (const [c, a] of [[mips[4], 1], [mips[4], .8], [mips[3], 1], [mips[2], .8], [mips[1], .6], [mips[0], .6], [near, 1]]) {
+    out.globalAlpha = a; out.drawImage(c, 0, 0, w, h);    // haze, wide, halo, glow, dof, text
+  }
+  out.globalCompositeOperation = 'source-over'; out.globalAlpha = 1;
+  out.fillStyle = shade; out.fillRect(0, 0, w, h);
+}
+
+// --- render: everything above, once per frame
+function render(dt) {
+  const yaw = (still ? .6 : t * .16) + spin, pitch = .1 + .05 * Math.sin(t * .23);
+  active = 0;
+  project(yaw, pitch, 0, .015 * Math.sin(t * .6), 0, 1, 1, false, 1, true);
+  project(1.3 - t * .07, .2, -1.05, .8, -2.4, .55, 1.1, true, 3, false);    // a far neighbour, out of focus
+  project(3.1 + t * .05, -.1, 1.15, -1.05, -3.1, .5, 1, true, 3, false);
+  for (const m of motes) {
+    const [x, y, z] = view([m.x + .04 * Math.sin(t * .5 + m.ph), m.y + OY, m.z], yaw, pitch), s = SC * CAM / (CAM - z);
+    splat(CX + x * s, CY - y * s, m.b, 0, Math.abs(z) > .7);
+  }
+  for (const f of puffs) {
+    const [x, y, z] = view(f.p, yaw, pitch), s = SC * CAM / (CAM - z);
+    splat(CX + x * s, CY - y * s, 0, 1.4 * (1 - f.age / f.life), false);
+  }
+  paint(); bloom();
+}
+
+let last = 0;
+function tick(now) {
+  requestAnimationFrame(tick);
+  if (now - last < 31) return;                               // hold the reel's 30 fps
+  const dt = last ? Math.min(.1, (now - last) / 1000) : 1 / 30;
+  last = now;
+  step(dt); render(dt);
+}
+
+// --- touch: click or space fires the cell, dragging turns it
+let drag = null;
+cv.addEventListener('pointerdown', e => { drag = { x: e.clientX, moved: 0 }; cv.setPointerCapture(e.pointerId); });
+cv.addEventListener('pointermove', e => { if (!drag) return; const dx = e.clientX - drag.x; drag.x = e.clientX; drag.moved += Math.abs(dx); spin += dx * .01; });
+cv.addEventListener('pointerup', () => { if (drag && drag.moved < 6) fire(); drag = null; });
+cv.addEventListener('pointercancel', () => { drag = null; });
+addEventListener('keydown', e => { if (e.code === 'Space') { e.preventDefault(); fire(); } });
+const sizer = new ResizeObserver(build);
+sizer.observe(cv);
+build(); requestAnimationFrame(tick);
+}
+</script>
+</body>
+</html>

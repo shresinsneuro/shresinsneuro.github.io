@@ -197,3 +197,11 @@ a.item:hover img.thumb { transform: translateY(-3px); }
   .posters { grid-template-columns: repeat(auto-fill, minmax(110px, 1fr)); gap: 28px 14px; }
   .poster b { font-size: 13px; margin-top: 10px; }
 }
+
+/* ---------- glowing neuron on Work (neuron-light.html in an iframe) ---------- */
+.work-embed { display: block; width: min(100%, 340px); aspect-ratio: 340 / 640; border: 0; margin: 10px auto 0; background: var(--bg); }
+/* wide screens: to the right of the list, its top level with the second project (Motor Intent) */
+@media (min-width: 1120px) {
+  .work-embed { position: absolute; left: 836px; top: 165px; width: 340px; margin: 0; }
+}
+@media (min-width: 1260px) { .work-embed { left: 1003px; } }
