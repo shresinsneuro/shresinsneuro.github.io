@@ -10,7 +10,7 @@
 <link rel="stylesheet" href="style.css">
 </head>
 <body>
-<div class="wrap">
+<div class="wrap wide">
   <aside class="side"><nav>
     <a href="index.html">About</a>
     <a href="work.html" class="on">Work</a>
@@ -19,24 +19,23 @@
     <a href="blog.html">Blog</a>
   </nav></aside>
 
-  <!-- EDIT: replace with your real projects. To add an image, put
-       <img class="thumb wide" src="images/name.png" alt=""> in place of the empty <div class="thumb wide">. -->
-  <main class="list">
-    <div class="item">
-      <div class="thumb wide" style="--c:#16201c"></div>
-      <div><b>Focus Decoder</b><span>Reading attention from EEG.</span></div>
-    </div>
-    <div class="item">
-      <div class="thumb wide" style="--c:#151a24"></div>
-      <div><b>Motor Intent</b><span>Decoding movement from the motor cortex.</span></div>
-    </div>
-    <!-- the glowing neuron (neuron-light.html). Wide screens: on the right, level with Motor Intent -->
-    <iframe class="work-embed" src="neuron-light.html" title="A 3D neuron drawn in glowing characters, firing action potentials. Tap to fire, drag to turn." loading="lazy"></iframe>
-    <div class="item">
-      <div></div>
-      <div><b>Who Owns a Thought?</b><span>An essay on neural privacy.</span></div>
-    </div>
+  <!-- EDIT: each glowing cell is one project; its card (picture + name) opens when
+       you hover over or tap the cell. To add a photo, swap a card's empty
+       <div class="mm-img" ...></div> for <img class="mm-img" src="images/name.jpg" alt="">.
+       work.js places the cells and grows the neurons between them. -->
+  <main class="mindmap" id="mindmap">
+    <div class="mm-node" tabindex="0" aria-label="OCD"><div class="mm-card"><div class="mm-img" style="--c:#1c2430"></div><b>OCD</b></div></div>
+    <div class="mm-node" tabindex="0" aria-label="KLF hard factors"><div class="mm-card"><div class="mm-img" style="--c:#241c2a"></div><b>KLF hard factors</b></div></div>
+    <div class="mm-node" tabindex="0" aria-label="locust"><div class="mm-card"><div class="mm-img" style="--c:#1f2a1d"></div><b>locust</b></div></div>
+    <div class="mm-node" tabindex="0" aria-label="neurophysiology"><div class="mm-card"><div class="mm-img" style="--c:#2a201a"></div><b>neurophysiology</b></div></div>
+    <div class="mm-node" tabindex="0" aria-label="neural stem cells"><div class="mm-card"><div class="mm-img" style="--c:#1a2629"></div><b>neural stem cells</b></div></div>
+    <div class="mm-node" tabindex="0" aria-label="mind scraper"><div class="mm-card"><div class="mm-img" style="--c:#2b1d1f"></div><b>mind scraper</b></div></div>
+    <div class="mm-node" tabindex="0" aria-label="Tavini Labs"><div class="mm-card"><div class="mm-img" style="--c:#1d2233"></div><b>Tavini Labs</b></div></div>
+    <div class="mm-node" tabindex="0" aria-label="Heltzer"><div class="mm-card"><div class="mm-img" style="--c:#2a2619"></div><b>Heltzer</b></div></div>
+    <div class="mm-node" tabindex="0" aria-label="Mind Drink Company"><div class="mm-card"><div class="mm-img" style="--c:#221a2a"></div><b>Mind Drink Company</b></div></div>
+    <div class="mm-node" tabindex="0" aria-label="livingwithfloaters.com"><div class="mm-card"><div class="mm-img" style="--c:#19262a"></div><b>livingwithfloaters<wbr>.com</b></div></div>
   </main>
 </div>
+<script src="work.js" defer></script>
 </body>
 </html>

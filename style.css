@@ -198,10 +198,33 @@ a.item:hover img.thumb { transform: translateY(-3px); }
   .poster b { font-size: 13px; margin-top: 10px; }
 }
 
-/* ---------- glowing neuron on Work (neuron-light.html in an iframe) ---------- */
-.work-embed { display: block; width: min(100%, 340px); aspect-ratio: 340 / 640; border: 0; margin: 10px auto 0; background: var(--bg); }
-/* wide screens: to the right of the list, its top level with the second project (Motor Intent) */
-@media (min-width: 1120px) {
-  .work-embed { position: absolute; left: 836px; top: 165px; width: 340px; margin: 0; }
+/* ---------- Work: a culture of neurons (drawn by work.js) ---------- */
+.mindmap { position: relative; width: 100%; height: max(720px, calc(100vh - 150px)); }
+.mm-neurons { position: absolute; pointer-events: none; image-rendering: pixelated; }
+html:has(.mindmap), body:has(.mindmap) { overflow-x: clip; }  /* neurites may reach past the window edge */
+
+/* each cell body has an invisible round hit area; its card opens over it on hover or tap */
+.mm-node { position: absolute; left: 0; top: 0; width: 46px; height: 46px; margin: -23px 0 0 -23px; border-radius: 50%; cursor: pointer; outline: none; z-index: 1; -webkit-tap-highlight-color: transparent; }
+.mm-node:hover, .mm-node:focus { z-index: 5; }
+.mm-card {
+  position: absolute; left: 50%; top: 50%; width: 140px;
+  display: flex; flex-direction: column; align-items: center; gap: 9px;
+  padding: 10px 10px 12px; border-radius: 22px;
+  background: #141214; border: 1.5px solid #ffcf8a;
+  box-shadow: 0 0 0 1px rgba(255,140,70,.25), 0 0 26px rgba(255,130,60,.4);
+  opacity: 0; pointer-events: none; transform: translate(-50%, -50%) scale(.35);
+  transition: opacity .22s, transform .28s cubic-bezier(.2,.9,.3,1.2);
 }
-@media (min-width: 1260px) { .work-embed { left: 1003px; } }
+.mm-node:hover .mm-card, .mm-node:focus .mm-card { opacity: 1; pointer-events: auto; transform: translate(-50%, -50%) scale(1); }
+/* the picture square: an empty tile until a photo is added as <img class="mm-img" src="..."> */
+.mm-img { display: block; width: 100%; aspect-ratio: 1; border-radius: 15px; object-fit: cover; background: var(--c, #222); }
+.mm-card b { font-size: 13px; font-weight: 600; line-height: 1.25; text-align: center; color: #fff; overflow-wrap: break-word; }
+@media (max-width: 1180px) {
+  .mm-card { width: 118px; padding: 8px 7px 10px; border-radius: 18px; gap: 7px; }
+  .mm-img { border-radius: 12px; }
+  .mm-card b { font-size: 12px; }
+}
+@media (prefers-reduced-motion: reduce) { .mm-card { transition: opacity .2s; } }
+/* the menu sits above the neurons, which grow everywhere but its own little patch */
+body:has(.mindmap) .side { z-index: 10; }
+@media (max-width: 640px) { body:has(.mindmap) .side { position: relative; top: auto; } }
