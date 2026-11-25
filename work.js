@@ -1,7 +1,8 @@
 // Work page: a culture of neurons, drawn like a fluorescence micrograph and
 // pixelated. Each glowing cell body is one project; hovering over it (or tapping it)
-// opens its card. Neighbouring cells are wired together into one network, and each
-// cell's neurites keep branching until they fill the whole page. No line ever
+// opens its card. The cells are scattered at random (a new arrangement on every
+// visit), each one its own neuron, and their neurites keep branching until they fill
+// the whole page. No line ever
 // touches another: each new piece is checked against everything already drawn
 // before it is kept. Clicking a cell sends one action potential out along all of
 // its branches as a wave of bright pixels.
@@ -16,50 +17,35 @@
 
   /* ---------------- where the cells sit ---------------- */
 
-  // wide screens: evenly round an oval, with room for an open card at every cell.
-  // If the window is too narrow for that, the map grows taller.
-  function oval(w, h) {
-    mode = "oval";
+  // a tiny seeded random; the seed is picked once per visit, so the scatter stays put
+  // while you are on the page (even through a resize) and is new the next time
+  const rand = s => () => (s = (s * 16807) % 2147483647) / 2147483647;
+  const SEED = 1 + Math.floor(Math.random() * 2147483000);
+
+  // scatter the cells at random over the map, far enough apart that an open card
+  // never covers another cell, and never so close to an edge that a card spills off
+  function scatter(w, h) {
     const card = nodes[0].querySelector(".mm-card");
     const bw = card.offsetWidth, bh = card.offsetHeight;
-    for (let tries = 0; tries < 20; tries++, h += 50) {
-      spots = ring(w, h, bw, bh);
-      const clear = spots.every((p, i) => spots.every((q, j) =>
-        j <= i || Math.abs(p.x - q.x) >= bw + 16 || Math.abs(p.y - q.y) >= bh + 16));
-      if (clear) break;
+    mode = w < 700 ? "column" : "oval";
+    if (mode === "column") h = Math.max(h, N * 125 + 120);    // phones: a longer page, so the cells have room
+    const R = rand(SEED);
+    let gap = Math.max(bw, bh) * 0.85 + 20;
+    for (let round = 0; round < 40; round++, gap *= 0.95) {
+      spots = [];
+      for (let tries = 0; tries < 4000 && spots.length < N; tries++) {
+        const p = { x: bw / 2 + 6 + R() * (w - bw - 12), y: bh / 2 + 6 + R() * (h - bh - 12) };
+        if (spots.every(q => Math.hypot(p.x - q.x, p.y - q.y) >= gap)) spots.push(p);
+      }
+      if (spots.length === N) break;
     }
     map.style.height = h + "px";
-  }
-  // walk the oval in "card units" so the gap between neighbours is even all the way round
-  function ring(w, h, bw, bh) {
-    const cx = w / 2, cy = h / 2, rx = cx - bw / 2 - 4, ry = cy - bh / 2 - 4;
-    const K = 720, pts = [], len = [0];
-    for (let i = 0; i <= K; i++) {
-      const a = -Math.PI / 2 + (i / K) * Math.PI * 2;
-      pts.push({ x: cx + rx * Math.cos(a), y: cy + ry * Math.sin(a) });
-      if (i) len.push(len[i - 1] + Math.hypot((pts[i].x - pts[i - 1].x) / bw, (pts[i].y - pts[i - 1].y) / bh));
-    }
-    const step = len[K] / N;
-    let j = 0;
-    return nodes.map((n, i) => {
-      const want = step * (i + 0.5);
-      while (len[j + 1] < want) j++;
-      return { x: pts[j].x, y: pts[j].y };
-    });
-  }
-  // phones: a zigzag down the page
-  function column(w) {
-    mode = "column";
-    const gap = 112, top = 70;
-    spots = nodes.map((n, i) => ({ x: w * (i % 2 ? 0.7 : 0.3), y: top + i * gap }));
-    map.style.height = top * 2 + (N - 1) * gap + "px";
   }
 
   let lastW = -1, lastH = -1;
   function layout() {
     map.style.height = "";                    // back to the stylesheet height before measuring
-    const w = map.clientWidth;
-    if (w < 700) column(w); else oval(w, map.clientHeight);
+    scatter(map.clientWidth, map.clientHeight);
     nodes.forEach((n, i) => put(n, spots[i].x, spots[i].y));
     const pw = document.documentElement.clientWidth;
     if (pw === lastW && map.clientHeight === lastH) return;   // nothing moved: keep the culture as it is
@@ -78,9 +64,6 @@
   const still = document.createElement("canvas"), S = still.getContext("2d");  // nuclei + the far neurites, drawn once
   let W = 0, H = 0, OX = 0, OY = 0, somas = [], near = [], far = [];
   const NEAR = 120;                           // neurites closer than this to their cell sway; the rest hold still
-
-  // a tiny seeded random so the culture keeps the same shape on every resize
-  const rand = s => () => (s = (s * 16807) % 2147483647) / 2147483647;
 
   // occupancy grid over the whole page: 3px cells, each remembers which neuron took it.
   // A neurite keeps 3px from its own cell's lines and 6px from anyone else's.
@@ -125,7 +108,7 @@
     low.width = still.width = Math.ceil(W / P); low.height = still.height = Math.ceil(H / P);
     gw = Math.ceil(W / G); gh = Math.ceil(H / G); grid = new Uint8Array(gw * gh);
     const R0 = mode === "oval" ? (map.clientWidth > 1000 ? 16 : 14) : 13;
-    const R = rand(20261125);
+    const R = rand(SEED + 7);
     const segs = [];
 
     // the menu gets a clear patch so its links stay readable
@@ -138,30 +121,10 @@
     }));
     somas.forEach((s, i) => disc(s, s.r + 3, i));
 
-    // one network: each cell sends a wavy process to its neighbour (round the oval, or down the zigzag)
-    const pairs = mode === "oval" ? somas.map((s, i) => [i, (i + 1) % N]) : somas.slice(1).map((s, i) => [i, i + 1]);
-    pairs.forEach(([i, j]) => {
-      const a = somas[i], b = somas[j], dx = b.x - a.x, dy = b.y - a.y, d = Math.hypot(dx, dy);
-      const ux = dx / d, uy = dy / d, nx = -uy, ny = ux, ph = R() * 6.28, waves = 1 + R() * 1.5;
-      const s0 = a.r + 6, s1 = d - b.r - 6, pts = [];
-      for (let s = s0; s <= s1; s += 4) {
-        const f = (s - s0) / (s1 - s0), amp = 7 * Math.sin(Math.PI * f) * Math.sin(ph + f * waves * 6.28);
-        pts.push({ x: a.x + ux * s + nx * amp, y: a.y + uy * s + ny * amp });
-      }
-      segs.push({ a: { x: a.x + ux * a.r * 0.8, y: a.y + uy * a.r * 0.8 }, b: pts[0], w: 2.4, d: 0, own: i, link: true, f: 0 });
-      let run = s0;
-      for (let k = 1; k < pts.length; k++) {
-        mark(pts[k - 1], pts[k], i);
-        segs.push({ a: pts[k - 1], b: pts[k], w: 2.4, d: run, own: i, link: true, f: k / pts.length });
-        run += Math.hypot(pts[k].x - pts[k - 1].x, pts[k].y - pts[k - 1].y);
-      }
-      segs.push({ a: pts[pts.length - 1], b: { x: b.x - ux * b.r * 0.8, y: b.y - uy * b.r * 0.8 }, w: 2.4, d: run, own: i, link: true, f: 1 });
-    });
-
     // then the neurites, a step at a time, taking turns, until there is no room left on the page
     const tips = somas.map(() => []);
     somas.forEach((s, i) => {
-      const seeds = mode === "oval" ? 13 : 7;
+      const seeds = mode === "oval" ? 13 : 9;
       for (let k = 0; k < seeds; k++) {
         const a = (k + R() * 0.7) * 6.283 / seeds + s.ph, ax = Math.cos(a), ay = Math.sin(a);
         const out = { x: s.x + ax * (s.r + 9), y: s.y + ay * (s.r + 9) }, start = { x: s.x + ax * (s.r + 15), y: s.y + ay * (s.r + 15) };
@@ -200,13 +163,13 @@
     }
     // near neurites sway a little (tips most, never more than 1.2px); the far ones hold still
     segs.forEach(s => {
-      s.sw = s.link ? 0.8 * Math.sin(Math.PI * s.f) : Math.min(1, s.d / NEAR) * 1.2;
+      s.sw = Math.min(1, s.d / NEAR) * 1.2;
       s.ph = (s.a.x * 0.013 + s.a.y * 0.017) % 6.28;
       s.len = Math.hypot(s.b.x - s.a.x, s.b.y - s.a.y);
       somas[s.own].reach = Math.max(somas[s.own].reach, s.d + s.len);
     });
-    near = segs.filter(s => s.link || s.d < NEAR);
-    far = segs.filter(s => !s.link && s.d >= NEAR);
+    near = segs.filter(s => s.d < NEAR);
+    far = segs.filter(s => s.d >= NEAR);
     somas.forEach((s, i) => { s.segs = segs.filter(g => g.own === i); });   // each cell's branches, for its action potential
     map.neurons = { somas, segs };
     paintStill();
@@ -217,9 +180,9 @@
 
   const BUCKETS = 8;
   const tint = k => `rgb(255,${Math.round(228 - 178 * k)},${Math.round(160 - 115 * k)})`;   // yellow at the cell, red at the tips
-  const shade = s => s.link ? 0.05 + 0.2 * Math.sin(Math.PI * s.f) : Math.min(1, s.d / 85);
+  const shade = s => Math.min(1, s.d / 85);
   const sway = (p, s, t) => ({ x: p.x + Math.sin(t * 0.0011 + s.ph) * s.sw, y: p.y + Math.cos(t * 0.0009 + s.ph * 1.3) * s.sw });
-  const moves = s => s.link || s.d < NEAR;
+  const moves = s => s.d < NEAR;
   const toLow = g => g.setTransform(1 / P, 0, 0, 1 / P, OX / P, OY / P);
 
   // neurites, batched by colour: a wide faint glow pass, then the bright core
