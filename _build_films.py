@@ -144,6 +144,7 @@ def head(title, css, wide=False):
     <a href="{css[:-9]}books.html">Books</a>
     <a href="{css[:-9]}films.html" class="on">Films</a>
     <a href="{css[:-9]}blog.html">Blog</a>
+    <a href="{css[:-9]}brain.html">My brain</a>
   </nav></aside>
 """
 

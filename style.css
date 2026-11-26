@@ -228,3 +228,13 @@ html:has(.mindmap), body:has(.mindmap) { overflow-x: clip; }  /* neurites may re
 /* the menu sits above the neurons, which grow everywhere but its own little patch */
 body:has(.mindmap) .side { z-index: 10; }
 @media (max-width: 640px) { body:has(.mindmap) .side { position: relative; top: auto; } }
+
+/* ---------- My brain: rotatable 3D model (brain.js) ---------- */
+.brain-view {
+  position: relative; width: 100%; height: min(78vh, 760px, 110vw); min-height: 320px;
+  cursor: grab; touch-action: none;
+}
+.brain-view:active { cursor: grabbing; }
+.brain-view canvas { display: block; width: 100%; height: 100%; }
+.brain-status { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; margin: 0; }
+.brain-caption { font-size: 13px; text-align: center; margin-top: 8px; }

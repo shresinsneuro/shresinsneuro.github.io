@@ -51,6 +51,7 @@ def head(title, up, wide=False):
     <a href="{up}books.html" class="on">Books</a>
     <a href="{up}films.html">Films</a>
     <a href="{up}blog.html">Blog</a>
+    <a href="{up}brain.html">My brain</a>
   </nav></aside>
 """
 

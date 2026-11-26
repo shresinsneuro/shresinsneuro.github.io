@@ -7,6 +7,7 @@ Plain HTML/CSS. No build step. Hosted on GitHub Pages.
 - `style.css` has the colors at the top under `:root`.
 - `posts/` holds one HTML file per blog post. Copy `siliguri.html` to start a new one.
 - `about.html` just forwards old links to the homepage.
+- `brain.html` is My brain: a 3D model of my brain you can turn. `brain.js` draws `models/brain.glb` with three.js (loaded from a CDN).
 
 - `_build_books.py` does the same for Books.
 - `_build_films.py` holds the ranked film list. Reorder or edit it, then run `python3 _build_films.py` to rebuild the Films pages.

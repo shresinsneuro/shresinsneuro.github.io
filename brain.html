@@ -1,0 +1,42 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>My brain · Shreshta Sinha</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<div class="wrap wide">
+  <aside class="side"><nav>
+    <a href="index.html">About</a>
+    <a href="work.html">Work</a>
+    <a href="books.html">Books</a>
+    <a href="films.html">Films</a>
+    <a href="blog.html">Blog</a>
+    <a href="brain.html" class="on">My brain</a>
+  </nav></aside>
+
+  <main class="brain-page">
+    <!-- The 3D model is models/brain.glb, made from my own MRI. brain.js draws it. -->
+    <div class="brain-view" id="brain-view" role="img"
+         aria-label="A 3D model of my brain that turns slowly. Drag to rotate it, scroll or pinch to zoom.">
+      <p class="brain-status quiet" id="brain-status">Loading my brain…</p>
+    </div>
+    <!-- EDIT: the caption under the model -->
+    <p class="quiet brain-caption">My brain, built from my own 3T MRI scan. Drag to turn it, scroll or pinch to zoom.</p>
+  </main>
+</div>
+
+<script type="importmap">
+{ "imports": {
+    "three": "https://cdn.jsdelivr.net/npm/three@0.170.0/build/three.module.js",
+    "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.170.0/examples/jsm/"
+} }
+</script>
+<script type="module" src="brain.js"></script>
+</body>
+</html>
